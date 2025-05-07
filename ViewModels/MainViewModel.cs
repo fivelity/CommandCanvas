@@ -1,13 +1,16 @@
 using System.Collections.ObjectModel;
 using System.Windows.Input;
 using Commandeez.Models;
+using Commandeez.Contracts.Services; // Added for IDialogService
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Microsoft.UI.Xaml.Controls; // Added for ContentDialogResult
 
 namespace Commandeez.ViewModels;
 
 public partial class MainViewModel : ObservableObject
 {
+    private readonly IDialogService _dialogService;
     public ObservableCollection<CommandItem> CommandQueue { get; }
 
     [ObservableProperty]
@@ -17,8 +20,9 @@ public partial class MainViewModel : ObservableObject
     [NotifyCanExecuteChangedFor(nameof(MoveCommandDownCommand))]
     private CommandItem? _selectedCommand;
 
-    public MainViewModel()
+    public MainViewModel(IDialogService dialogService) // Inject IDialogService
     {
+        _dialogService = dialogService;
         CommandQueue = new ObservableCollection<CommandItem>();
         LoadSampleCommands(); // For testing purposes
     }
@@ -31,19 +35,35 @@ public partial class MainViewModel : ObservableObject
     }
 
     [RelayCommand]
-    private void AddCommand()
+    private async void AddCommand()
     {
-        // Placeholder for Add command logic
-        System.Diagnostics.Debug.WriteLine("AddCommand executed");
+        var (result, viewModel) = await _dialogService.ShowEditCommandDialogAsync();
+        if (result == ContentDialogResult.Primary && viewModel != null && !string.IsNullOrWhiteSpace(viewModel.Name) && !string.IsNullOrWhiteSpace(viewModel.CommandText))
+        {
+            CommandQueue.Add(new CommandItem(viewModel.Name, viewModel.CommandText, viewModel.Description));
+        }
     }
 
     [RelayCommand(CanExecute = nameof(CanExecuteEditOrRemoveCommand))]
-    private void EditCommand()
+    private async void EditCommand()
     {
-        // Placeholder for Edit command logic
-        if (SelectedCommand != null)
+        if (SelectedCommand == null) return;
+
+        // Create a CustomCommandViewModel from the selected CommandItem
+        var editViewModel = new CustomCommandViewModel
         {
-            System.Diagnostics.Debug.WriteLine($"EditCommand executed for: {SelectedCommand.Name}");
+            Name = SelectedCommand.Name,
+            CommandText = SelectedCommand.CommandText,
+            Description = SelectedCommand.Description
+        };
+
+        var (result, updatedViewModel) = await _dialogService.ShowEditCommandDialogAsync(editViewModel);
+
+        if (result == ContentDialogResult.Primary && updatedViewModel != null && !string.IsNullOrWhiteSpace(updatedViewModel.Name) && !string.IsNullOrWhiteSpace(updatedViewModel.CommandText))
+        {
+            SelectedCommand.Name = updatedViewModel.Name;
+            SelectedCommand.CommandText = updatedViewModel.CommandText;
+            SelectedCommand.Description = updatedViewModel.Description;
         }
     }
 

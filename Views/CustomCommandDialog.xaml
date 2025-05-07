@@ -1,0 +1,27 @@
+<ContentDialog
+    x:Class="Commandeez.Views.CustomCommandDialog"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    Title="Add/Edit Command"
+    PrimaryButtonText="OK"
+    SecondaryButtonText="Cancel"
+    DefaultButton="Primary">
+
+    <StackPanel Spacing="10">
+        <TextBox Header="Name:"
+                 Text="{x:Bind ViewModel.Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                 PlaceholderText="Enter command name (e.g., SFC Scan)"/>
+        <TextBox Header="Command Text:"
+                 Text="{x:Bind ViewModel.CommandText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                 PlaceholderText="Enter command (e.g., sfc /scannow)"/>
+        <TextBox Header="Description (Optional):"
+                 Text="{x:Bind ViewModel.Description, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                 PlaceholderText="Enter a brief description of the command"
+                 AcceptsReturn="True"
+                 Height="100"
+                 TextWrapping="Wrap"/>
+    </StackPanel>
+</ContentDialog>
